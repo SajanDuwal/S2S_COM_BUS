@@ -7,16 +7,18 @@
 
 #include "ax25_generator.h"
 
-#define INFO_LEN		(80)
+#define INFO_LENGTH		(81)
+#define AX_25_LENGTH	(103)
 
-uint8_t info_packet[INFO_LEN];
-extern uint8_t tx_cmd[102];
+uint8_t info_packet[INFO_LENGTH];
+extern uint8_t tx_cmd[AX_25_LENGTH];
 
 void updatePacket(uint8_t *OBC_Rx_buffer) {
-	int j = 0;
-	int k = 2;
-	int len_of_payload = OBC_Rx_buffer[1];
-	myDebug("\nlen_of_payload: %d\r\n", len_of_payload);
+	info_packet[0] = OBC_Rx_buffer[1];  	// Packet Type
+	int j = 1;
+	int k = 3;
+	int len_of_payload = OBC_Rx_buffer[2];
+	myDebug("\nlen_of_payload: %d\r\n", len_of_payload + 1);
 	for (int i = 0; i < len_of_payload; i++) {
 		info_packet[j] = OBC_Rx_buffer[k];
 		j++;
@@ -24,7 +26,7 @@ void updatePacket(uint8_t *OBC_Rx_buffer) {
 	}
 	myDebug("info_packet: 0x%x\r\n", info_packet);
 	for (int i = 0; i < sizeof(info_packet); i++) {
-		myDebug(" %x", info_packet[i]);
+		myDebug("%02x ", info_packet[i]);
 	}
 	myDebug("\r\n");
 }
@@ -66,26 +68,28 @@ int AX_25PacketFormation(uint8_t *OBC_Rx_buffer) {
 	}
 
 	uint16_t crc = 0;
-	crc = calculateCRC_CCITT_AX25(buff_head, sizeof(buff_head));
+	crc = calc_CRC(buff_head, sizeof(buff_head));
 
-	tx_cmd[17] = (crc >> 8) && 0xFF;
-	tx_cmd[18] = crc & 0xFF;
+	tx_cmd[17] = (crc >> 8);
+	tx_cmd[18] = crc;
+
+	tx_cmd[19] = OBC_Rx_buffer[1];  // packet type
 
 	// information field
-	int i = 19;
-	for (int k = 0; k < sizeof(info_packet); k++) {
+	int i = 20;
+	for (int k = 1; k < sizeof(info_packet); k++) {
 		tx_cmd[i] = info_packet[k];
 		i++;
 	}
 
 	int j = 0;
-	for (int k = 19; k < 99; k++) {
+	for (int k = 19; k < 100; k++) {
 		buf_packet[j] = tx_cmd[k];
 		j++;
 	}
 	// Calculate CRC-CCITT for the packet data starting from packet[1]
 	crc = 0;
-	crc = calculateCRC_CCITT_AX25(buf_packet, j-1);
+	crc = calculateCRC_CCITT_AX25(buf_packet, j - 1);
 
 	// Store CRC result in the packet array (from packet[1] to end of for loop)
 	tx_cmd[i] = (crc >> 8) & 0xFF; // Most significant byte
@@ -93,14 +97,13 @@ int AX_25PacketFormation(uint8_t *OBC_Rx_buffer) {
 	tx_cmd[i] = crc & 0xFF;        // Least significant byte
 	i++;
 	// AX.25 Packet footer
-	tx_cmd[i] = 0x73;
+	tx_cmd[i] = 0x73;				// i=102
 	myDebug("\npacket_len: %d\r\n", i + 1);
 	myDebug("packet: 0x%x\r\n", tx_cmd);
 	for (int j = 0; j <= i; j++) {
-		myDebug(" %x", tx_cmd[j]);
+		myDebug("%02x ", tx_cmd[j]);
 	}
 	myDebug("\r\n");
-	delay_us(100);
 	return i + 1;
 }
 

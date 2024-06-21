@@ -1,1 +1,2 @@
 ../Core/Src/error_detection.c:11:10:calculateCRC_CCITT_AX25	4
+../Core/Src/error_detection.c:33:10:calc_CRC	4

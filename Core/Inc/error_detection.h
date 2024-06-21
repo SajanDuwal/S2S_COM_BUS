@@ -12,4 +12,6 @@
 
 uint16_t calculateCRC_CCITT_AX25(const uint8_t *data, size_t length);
 
+uint16_t calc_CRC(const uint8_t *data, size_t length);
+
 #endif /* INC_ERROR_DETECTION_H_ */

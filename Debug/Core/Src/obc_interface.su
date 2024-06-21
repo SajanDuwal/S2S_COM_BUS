@@ -1,1 +1,1 @@
-../Core/Src/obc_interface.c:17:6:WAIT_FOR_HANDSHAKE	16	static
+../Core/Src/obc_interface.c:17:6:WAIT_FOR_HANDSHAKE	24	static

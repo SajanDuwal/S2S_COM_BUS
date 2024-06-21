@@ -19,9 +19,9 @@ void WAIT_FOR_HANDSHAKE() {
 	memset(MainCMDHs, '\0', sizeof(MainCMDHs));
 	OBC_HANDSHAKE_FLAG = 0;
 	if (HAL_UART_Receive(&huart2, MainCMDHs, ACK_LENGTH, 7000) == HAL_OK) {
-		myDebug("--> Handshake command received from OBC: 0x");
+		myDebug("--> Handshake command received from OBC: 0x%x\r\n");
 		for (int i = 0; i < (ACK_LENGTH); i++) {
-			myDebug("%02x", MainCMDHs[i]);
+			myDebug("%02x ", MainCMDHs[i]);
 		}
 		myDebug("\n");
 
@@ -29,7 +29,11 @@ void WAIT_FOR_HANDSHAKE() {
 			myDebug("--> Command Acknowledged!\n");
 			if (HAL_UART_Transmit(&huart2, MainCMDHs, ACK_LENGTH, 2000)
 					== HAL_OK) {
-				myDebug("--> Handshake ACK, re-transmit to OBC.\n");
+				myDebug("--> Handshake ACK, re-transmit to OBC: \n");
+				for (int i = 0; i < (ACK_LENGTH); i++) {
+					myDebug("%02x ", MainCMDHs[i]);
+				}
+				myDebug("\n");
 				myDebug("_________Waiting Beacon_Type1 for TX_____\r\n");
 				memset(MainCMDHs, '\0', sizeof(MainCMDHs));
 				OBC_HANDSHAKE_FLAG = 1;
@@ -39,6 +43,10 @@ void WAIT_FOR_HANDSHAKE() {
 			if (HAL_UART_Transmit(&huart2, MainCMDHs, ACK_LENGTH, 2000)
 					== HAL_OK) {
 				myDebug("--> Unknown Handshake ACK, re-transmit to OBC.\n");
+				for (int i = 0; i < (ACK_LENGTH); i++) {
+					myDebug("%02x ", MainCMDHs[i]);
+				}
+				myDebug("\n");
 				memset(MainCMDHs, '\0', sizeof(MainCMDHs));
 				OBC_HANDSHAKE_FLAG = 0;
 				WAIT_FOR_HANDSHAKE();

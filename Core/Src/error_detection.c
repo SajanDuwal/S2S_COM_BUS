@@ -28,3 +28,31 @@ uint16_t calculateCRC_CCITT_AX25(const uint8_t *data, size_t length) {
 
 	return crc; // Return calculated CRC
 }
+
+
+uint16_t calc_CRC(const uint8_t *data, size_t length) {
+
+	uint16_t crcReg = 0xFFFF;	// Initialize the CRC register with 0xFFFF
+	uint16_t calc = 0x8408;		// Polynomial for CRC-16
+	uint16_t w;
+	int i, j;
+	uint8_t calc_data[length];  // in length bytes, actual_size are data bytes for CRC
+
+	// Copy data into calc_data
+	for (i = 0; i < length; i++) {
+		calc_data[i] = data[i];
+		// Iterate over each byte of data
+		for (j = 0; j < 8; j++) {
+			w = (crcReg ^ calc_data[i]) & 0x0001; // XOR the LSB of crcReg with the LSB of calc_data
+			crcReg = crcReg >> 1;			// Right-shift the crcReg by 1 bit
+			if (w == 1) {
+				crcReg = crcReg ^ calc;	// If w is 1, XOR the crcReg with the polynomial
+			}
+			calc_data[i] = calc_data[i] >> 1;// Right-shift the data byte by 1 bit
+		}
+	}
+	crcReg = crcReg ^ 0xFFFF;						// Final XOR with 0xFFFF
+	return crcReg;
+}
+
+
